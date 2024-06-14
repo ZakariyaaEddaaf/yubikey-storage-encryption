@@ -59,7 +59,7 @@ get_yubikey_response() {
 }
 
 # Function to decrypt the Streamcaster partition
-decrypt_streamcaster_partition() {
+decrypt_partition() {
     local KEY=$1
     # Check if the key is provided
     if [ -z "$KEY" ]; then
@@ -86,6 +86,6 @@ require_sudo_privilege
 require_password
 generate_challenge
 get_yubikey_response
-decrypt_streamcaster_partition ${CHALLENGE}${RESPONSE}
+decrypt_partition ${CHALLENGE}${RESPONSE}
 
 
