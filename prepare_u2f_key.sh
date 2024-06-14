@@ -1,0 +1,46 @@
+#!/bin/bash
+
+RED_COLOR="\033[1;31m"
+RESET_COLOR="\033[0m"
+GREEN_COLOR="\033[1;32m"
+BLUE_COLOR="\033[1;34m"
+YELLOW_COLOR="\033[1;33m"
+MAGENTA_COLOR="\033[1;35m"
+
+# Function to read password securely
+require_password() {
+  echo -e "${YELLOW_COLOR}$: Please enter a secure password:${RESET_COLOR}"
+  PASSWORD=$(systemd-ask-password "") 
+
+  if [ -z "${PASSWORD}" ]; then
+    echo -e "${RED_COLOR}$: Error Password is empty${RESET_COLOR}"
+    exit 1
+  fi
+}
+
+# Function to generate SHA256 challenge
+generate_challenge() {
+  CHALLENGE=$(printf "%s" "${PASSWORD}" | sha256sum | awk '{print $1}')
+
+  if [ -z "$CHALLENGE" ]; then
+    echo -e "${RED_COLOR}$: Error Failed to generate the challenge${RESET_COLOR}"
+    exit 1
+  fi
+}
+
+# Function to get response from YubiKey
+get_yubikey_response() {
+  echo -e "${YELLOW_COLOR}$: Please touch the YubiKey when it flashes...${RESET_COLOR}"
+  RESPONSE=$(ykchalresp -2 "${CHALLENGE}")
+
+  if [ -z "${RESPONSE}" ]; then
+    echo -e "${RED_COLOR}$: Error Failed to get a response from the YubiKey${RESET_COLOR}"
+    exit 1
+  fi
+}
+
+require_password
+generate_challenge
+get_yubikey_response
+echo -e ${GREEN_COLOR}$: Key: "${CHALLENGE}${RESPONSE}"${RESET_COLOR}
+
